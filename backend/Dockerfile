@@ -1,19 +1,13 @@
 FROM php:8.2-apache
 
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    libzip-dev \
-    && docker-php-ext-install zip pdo pdo_mysql
+# Cài extension cần cho Laravel
+RUN docker-php-ext-install pdo pdo_mysql
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copy code vào container
+COPY . /var/www/html
 
-WORKDIR /var/www/html
+# Đổi document root sang public
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
-COPY . .
-
-RUN composer install
-
-RUN chown -R www-data:www-data /var/www/html
-
-EXPOSE 80
+# Enable rewrite
+RUN a2enmod rewrite
