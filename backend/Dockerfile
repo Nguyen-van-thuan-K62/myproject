@@ -1,28 +1,35 @@
 FROM php:8.2-apache
 
-# Cài extension Laravel
-RUN docker-php-ext-install pdo pdo_mysql
+# Cài package cần thiết
+RUN apt-get update && apt-get install -y \
+    git \
+    zip \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install zip pdo pdo_mysql
 
-# Bật rewrite
+# Enable apache rewrite
 RUN a2enmod rewrite
 
 # Cài composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Workdir
 WORKDIR /var/www/html
 
-# Copy composer files trước để cache layer
+# Copy composer trước để cache
 COPY composer.json composer.lock ./
 
-# Cài dependency
+# Install dependency
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy toàn bộ source code
+# Copy toàn bộ source
 COPY . .
 
-# Đổi Apache document root sang public
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
-
-# Permission
+# Set quyền
 RUN chown -R www-data:www-data /var/www/html
+
+# Set document root
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+
+EXPOSE 80
