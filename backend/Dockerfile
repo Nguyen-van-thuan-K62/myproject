@@ -1,16 +1,23 @@
 FROM php:8.2-apache
 
-# cài extension cần cho laravel
+# Cài extension Laravel cần
 RUN docker-php-ext-install pdo pdo_mysql
 
-# bật rewrite
+# Enable rewrite
 RUN a2enmod rewrite
 
-# copy source
+# Cài composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy source code
 COPY . /var/www/html
 
-# đổi document root sang public
+# Cài thư viện Laravel
+WORKDIR /var/www/html
+RUN composer install --no-dev --optimize-autoloader
+
+# Đổi document root sang public
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
-# permission
+# Permission
 RUN chown -R www-data:www-data /var/www/html
