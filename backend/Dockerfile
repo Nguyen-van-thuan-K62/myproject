@@ -14,22 +14,18 @@ RUN a2enmod rewrite
 # Cài composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Workdir
 WORKDIR /var/www/html
 
-# Copy composer trước để cache
-COPY composer.json composer.lock ./
-
-# Install dependency
-RUN composer install --no-dev --optimize-autoloader
-
-# Copy toàn bộ source
+# Copy toàn bộ source trước
 COPY . .
+
+# Cài dependency Laravel
+RUN composer install --no-dev --optimize-autoloader
 
 # Set quyền
 RUN chown -R www-data:www-data /var/www/html
 
-# Set document root
+# Set document root sang public
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
