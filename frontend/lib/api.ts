@@ -14,7 +14,7 @@ export interface User {
   email: string;
 }
 
-const API_URL = "http://127.0.0.1:8000/api";
+const API_URL = "https://myproject-api-3w1i.onrender.com/api";
 
 // Helper để lấy token (chỉ chạy ở client)
 function getAuthToken(): string | null {
