@@ -1,6 +1,5 @@
 FROM php:8.2-apache
 
-# Cài package cần thiết + PostgreSQL driver
 RUN apt-get update && apt-get install -y \
     git \
     zip \
@@ -9,29 +8,30 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && docker-php-ext-install zip pdo pdo_pgsql pgsql
 
-# Enable apache rewrite
 RUN a2enmod rewrite
 
-# Cài composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy composer trước (tối ưu build)
+# Copy composer trước
 COPY composer.json composer.lock ./
 
-RUN composer install --no-dev --optimize-autoloader
+# Cài dependency (tắt script)
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Copy toàn bộ source
 COPY . .
 
+# Chạy artisan sau khi đã có source
+RUN php artisan package:discover
+
 # Set quyền
 RUN chown -R www-data:www-data /var/www/html
 
-# Set document root sang public
+# Set public folder
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 
-# Start app + migrate DB
 CMD php artisan migrate --force && apache2-foreground
