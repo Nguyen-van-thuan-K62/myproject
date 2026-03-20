@@ -6,7 +6,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000'],
+    'allowed_origins' => ['https://myproject-five-black.vercel.app'],
 
     'allowed_headers' => ['*'],
 
